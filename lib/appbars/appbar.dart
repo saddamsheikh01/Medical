@@ -8,32 +8,31 @@ class MedicalPage extends StatefulWidget {
 }
 
 class _MedicalPageState extends State<MedicalPage> {
-  int _selectedIndex = 1;
   List<Map<String, String>> medications = [
     {'name': 'Paracetamol', 'instructions': 'Take 1 tablet after breakfast'},
     {'name': 'Vitamin C', 'instructions': 'Take 1 tablet in the afternoon'},
     {'name': 'Ibuprofen', 'instructions': 'Take 1 tablet after dinner'},
-    {'name': 'Ibuprofen', 'instructions': 'Take 1 tablet after dinner'},
-    {'name': 'Ibuprofen', 'instructions': 'Take 1 tablet after dinner'},
-    {'name': 'Ibuprofen', 'instructions': 'Take 1 tablet after dinner'},
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   void _addMedication(String name, String instructions) {
-    setState(() {
-      medications.add({'name': name, 'instructions': instructions});
-    });
+    if (name.isNotEmpty && instructions.isNotEmpty) {
+      setState(() {
+        medications.add({'name': name, 'instructions': instructions});
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$name added successfully!')),
+      );
+    }
   }
 
   void _removeMedication(int index) {
+    String removedMed = medications[index]['name']!;
     setState(() {
       medications.removeAt(index);
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$removedMed removed!')),
+    );
   }
 
   void _showAddMedicationDialog() {
@@ -44,7 +43,8 @@ class _MedicalPageState extends State<MedicalPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Add Medication'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text('Add Medication', style: TextStyle(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -60,19 +60,13 @@ class _MedicalPageState extends State<MedicalPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel', style: TextStyle(color: Colors.red)),
             ),
             ElevatedButton(
               onPressed: () {
-                if (nameController.text.isNotEmpty &&
-                    instructionsController.text.isNotEmpty) {
-                  _addMedication(
-                      nameController.text, instructionsController.text);
-                  Navigator.of(context).pop();
-                }
+                _addMedication(nameController.text, instructionsController.text);
+                Navigator.of(context).pop();
               },
               child: Text('Add'),
             ),
@@ -86,12 +80,16 @@ class _MedicalPageState extends State<MedicalPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.grey[200],
+        backgroundColor: Colors.white,
+        elevation: 0,
         title: Text('Medication',
             style: TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.bold)),
-        leading: Icon(Icons.arrow_back_ios, color: Colors.black),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
-          Icon(Icons.heart_broken, color: Colors.red),
+          Icon(Icons.favorite_border, color: Colors.red),
           SizedBox(width: 10),
           Icon(Icons.medical_services, color: Colors.green),
           SizedBox(width: 16),
@@ -103,7 +101,7 @@ class _MedicalPageState extends State<MedicalPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Today’s Medications',
+              "Today's Medications",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
             ),
             SizedBox(height: 10),
@@ -112,7 +110,7 @@ class _MedicalPageState extends State<MedicalPage> {
                 itemCount: medications.length,
                 itemBuilder: (context, index) {
                   return Dismissible(
-                    key: Key(medications[index]['name']!),
+                    key: UniqueKey(),
                     direction: DismissDirection.endToStart,
                     onDismissed: (direction) {
                       _removeMedication(index);
@@ -120,11 +118,11 @@ class _MedicalPageState extends State<MedicalPage> {
                     background: Container(
                       decoration: BoxDecoration(
                         color: Colors.red[300],
-                        borderRadius: BorderRadius.circular(15), // Add border radius
+                        borderRadius: BorderRadius.circular(15),
                       ),
                       alignment: Alignment.centerRight,
                       padding: EdgeInsets.only(right: 20),
-                      margin: EdgeInsets.symmetric(vertical: 5), // Add margin for better spacing
+                      margin: EdgeInsets.symmetric(vertical: 5),
                       child: Icon(Icons.delete, color: Colors.white, size: 30),
                     ),
                     child: medicationCard(
@@ -149,6 +147,7 @@ class _MedicalPageState extends State<MedicalPage> {
   Widget medicationCard(String title, String subtitle) {
     return Card(
       elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       child: ListTile(
         leading: Icon(Icons.medical_services, color: Colors.green, size: 35),
